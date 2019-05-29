@@ -1,25 +1,25 @@
-#Custom Logger
+# Custom Logger
 This is a simpe, minimal, custom logger to log easily errors, exceptions or custom messages either in Spring or in a native application.
 
-##Components
+## Components
 - CustomLogger
 - CustomLoggerUtil
 - CustomLogLevel
 - customLog.properties
 
-###CustomLogger
+### CustomLogger
 This is the main class where all the magic is happening. It's a simple static class that handles the logging and message generation.
 
-###CustomLoggerUtil
+### CustomLoggerUtil
 This is a helper class for the main CustomLogger. This class provides some special methods like easy reading from a property file.
 
-###CustomLogLevel
+### CustomLogLevel
 This is an enumeration, that represents all the possible level of an error or exception. This class can edited like you need it for your own project, like adding new levels or changing levels etc.
 
-###customLog.properties
+### customLog.properties
 In this propertiesfile you can configure all the Textsamples of the actual log message. So there you can set if the time should be logged or not or if you want a specific beginning text etc.
 
-##Usage
+## Usage
 To use the Logger there are two examples in the App and DemoApplication. (native and Spring)\
 Its just a oe liner to create a very richt log entry:
 ```java
@@ -64,7 +64,7 @@ STACK:
 	at com.example.demo.DemoApplication.main(DemoApplication.java:14)
 ```
 
-But for example you can modify the `[COMPANYNAME]`, the seperators between the informations, the `ERROR:`, set if you want the time to get logged and in which pattern or set seperatly if you want the exception to be logged etc. etc.\
+But for example you can modify the `[COMPANYNAME]`, the seperators between the informations, the `ERROR:`, set if you want the time to get logged and in which pattern or set seperatly if you want the exception to be logged etc. etc.
 
 Just take a look inside the code everything is commented well and all the configurations in the propertiesfile are commented and described. So it's very intuitive and easy to use this Logger.
 
