@@ -68,6 +68,8 @@ But for example you can modify the `[COMPANYNAME]`, the seperators between the i
 
 Just take a look inside the code everything is commented well and all the configurations in the propertiesfile are commented and described. So it's very intuitive and easy to use this Logger.
 
+Note: If you don't want to rely on the Spring Framework as dependency you have to change the Util class to resolve the resources path correctly, because at the moment this relys on a Spring dependency.
+
 Feel free to modify, so it fits your needs best.
 
 @mschoeffel
