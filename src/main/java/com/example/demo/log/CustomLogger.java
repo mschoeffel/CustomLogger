@@ -44,6 +44,18 @@ public final class CustomLogger {
   private static final String CUSTOM_MSG_STACK = CustomLoggerUtil.getProp("custom.log.msg.stack");
   //Sequence before the actual stacktrace
   private static final String CUSTOM_MSG_PRE_STACKTXT = CustomLoggerUtil.getProp("custom.log.msg.prestack");
+  //Number of StackTrace lines, that should be logged always
+  private static final int STACKTRACE_LINES = Integer.parseInt(CustomLoggerUtil.getProp("custom.log.msg.stack.lines.min"));
+  //Number of StackTrace lines, that should be logged by an HIGH error
+  private static final int STACKTRACE_LINES_MAX = Integer.parseInt(CustomLoggerUtil.getProp("custom.log.msg.stack.lines.max"));
+  //Intend on layer zero
+  //public static final String SPACEINTEND_ZERO = "";
+  //Intend on layer one
+  //public static final String SPACEINTEND_ONE = "  ";
+  //New line character
+  public static final String NEW_LINE_CHAR = CustomLoggerUtil.getProp("custom.log.newlinechar");
+  //Sequence before the additional sequence
+  private static final String CUSTOM_MSG_PRE_ADDITIONAL = CustomLoggerUtil.getProp("custom.log.msg.preadd");
 
   /**
    * Private constructor
