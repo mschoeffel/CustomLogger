@@ -1,10 +1,8 @@
 package com.example.demo.log;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,56 +10,114 @@ import java.util.logging.Logger;
 /**
  * Custom logger
  * Please change configurations in the customLog.properties file.
- * @version 1.0
- * @author schoeffel_michael
+ *
+ * @author (c) mschoeffel
+ * @version 2.0
  */
 public final class CustomLogger {
 
-  //Lowest level that will be logged:
-  private static final short LOG_LEVEL_PROP = Short.parseShort(Optional.ofNullable(CustomLoggerUtil.getProp("custom.log.level")).orElse("0"));
+  /*------------------------------------------------------------------------------------------------------------------*/
+  /* CONSTANTS FROM PROPERTIES FILE                                                                                   */
+  /*------------------------------------------------------------------------------------------------------------------*/
 
-  //Beginmessagephrase
-  private static final String CUSTOM_MSG_BEGIN = CustomLoggerUtil.getProp("custom.log.msg.begin");
-  //Endmessagephrase
-  private static final String CUSTOM_MSG_END = CustomLoggerUtil.getProp("custom.log.msg.end");
-  //Message seperator sequence
-  private static final String CUSTOM_MSG_SEPERATOR = CustomLoggerUtil.getProp("custom.log.msg.seperator");
-
-  //Boolean if time should be logged
-  private static final boolean CUSTOM_LOG_TIME = Boolean.parseBoolean(CustomLoggerUtil.getProp("custom.log.time"));
-  //Timepattern of the logged time
-  private static final String CUSTOM_MSG_TIMEPATTERN = Optional.ofNullable(CustomLoggerUtil.getProp("custom.log.msg.timepattern")).orElse("yyyy/MM/dd HH:mm:ss");
-  //Seperator sequence behind the time
-  private static final String CUSTOM_MSG_TIMESEPERATOR = CustomLoggerUtil.getProp("custom.log.msg.timeseperator");
-
-  //Boolean if the Exception should be logged
-  private static final boolean CUSTOM_LOG_EXEPTION = Boolean.parseBoolean(CustomLoggerUtil.getProp("custom.log.exception"));
-  //Errorheading phrase in front of the actual errortext
-  private static final String CUSTOM_MSG_ERROR = CustomLoggerUtil.getProp("custom.log.msg.error");
-  //Sequence before the actual errortext
-  private static final String CUSTOM_MSG_PRE_ERRORTXT = CustomLoggerUtil.getProp("custom.log.msg.preerror");
-  //Stackheading phrase in front of the actual stacktrace
-  private static final String CUSTOM_MSG_STACK = CustomLoggerUtil.getProp("custom.log.msg.stack");
-  //Sequence before the actual stacktrace
-  private static final String CUSTOM_MSG_PRE_STACKTXT = CustomLoggerUtil.getProp("custom.log.msg.prestack");
-  //Number of StackTrace lines, that should be logged always
-  private static final int STACKTRACE_LINES = Integer.parseInt(CustomLoggerUtil.getProp("custom.log.msg.stack.lines.min"));
-  //Number of StackTrace lines, that should be logged by an HIGH error
-  private static final int STACKTRACE_LINES_MAX = Integer.parseInt(CustomLoggerUtil.getProp("custom.log.msg.stack.lines.max"));
-  //Intend on layer zero
-  //public static final String SPACEINTEND_ZERO = "";
-  //Intend on layer one
-  //public static final String SPACEINTEND_ONE = "  ";
-  //New line character
+  /*---------------------------------------------------------*/
+  /* GENERAL CONSTANTS                                       */
+  /*---------------------------------------------------------*/
+  // Lowest level that will be logged
+  private static final short LOG_LEVEL = Short.parseShort(
+          Optional.ofNullable(CustomLoggerUtil.getProp("custom.log.level")).orElse("0"));
+  // New line character
   public static final String NEW_LINE_CHAR = CustomLoggerUtil.getProp("custom.log.newlinechar");
-  //Sequence before the additional sequence
-  private static final String CUSTOM_MSG_PRE_ADDITIONAL = CustomLoggerUtil.getProp("custom.log.msg.preadd");
+
+
+  /*---------------------------------------------------------*/
+  /* TIME CONSTANTS                                          */
+  /*---------------------------------------------------------*/
+  // Should the time section be logged
+  private static final boolean LOG_MSG_TIME_SHOW = Boolean.parseBoolean(CustomLoggerUtil.getProp("custom.log.msg.time.show"));
+  // Pattern of the logged time
+  private static final String LOG_MSG_TIME_PATTERN = Optional.ofNullable(
+          CustomLoggerUtil.getProp("custom.log.msg.time.pattern")).orElse("yyyy/MM/dd HH:mm:ss");
+  // Seperator between time and main section
+  private static final String LOG_MSG_TIME_SEP = CustomLoggerUtil.getProp("custom.log.msg.time.sep");
+
+
+  /*---------------------------------------------------------*/
+  /* MAIN CONSTANTS                                          */
+  /*---------------------------------------------------------*/
+  // Text at the beginning of the main section
+  private static final String LOG_MSG_MAIN_BEGIN = CustomLoggerUtil.getProp("custom.log.msg.main.begin");
+  // Text at the end of the main section
+  private static final String LOG_MSG_MAIN_END = CustomLoggerUtil.getProp("custom.log.msg.main.end");
+  // Separator between all the parts of the main section
+  private static final String LOG_MSG_MAIN_SEP = CustomLoggerUtil.getProp("custom.log.msg.main.sep");
+
+
+  /*---------------------------------------------------------*/
+  /* ADDITIONAL CONSTANTS                                    */
+  /*---------------------------------------------------------*/
+  // Should the additional section be logged
+  private static final boolean LOG_MSG_ADD_SHOW = Boolean.parseBoolean(CustomLoggerUtil.getProp("custom.log.msg.add.show"));
+  // Sequence before additional headline
+  private static final String LOG_MSG_ADD_HEAD_PRE = CustomLoggerUtil.getProp("custom.log.msg.add.head.pre");
+  // Headline of the additional sequence
+  private static final String LOG_MSG_ADD_HEAD_TEXT = CustomLoggerUtil.getProp("custom.log.msg.add.head.text");
+  // Sequence before every additional entity
+  private static final String LOG_MSG_ADD_ITEM_PRE = CustomLoggerUtil.getProp("custom.log.msg.add.item.pre");
+  // Sequence between the single elements
+  private static final String LOG_MSG_ADD_ITEM_SEP = CustomLoggerUtil.getProp("custom.log.msg.add.item.sep");
+
+
+  /*---------------------------------------------------------*/
+  /* ERROR CONSTANTS                                         */
+  /*---------------------------------------------------------*/
+  // Should the error section be logged
+  private static final boolean LOG_MSG_ERR_SHOW = Boolean.parseBoolean(CustomLoggerUtil.getProp("custom.log.msg.err.show"));
+  // Sequence before error headline
+  private static final String LOG_MSG_ERR_HEAD_PRE = CustomLoggerUtil.getProp("custom.log.msg.err.head.pre");
+  // Headline of the error sequence
+  private static final String LOG_MSG_ERR_HEAD_TEXT = CustomLoggerUtil.getProp("custom.log.msg.err.head.text");
+  // Sequence before the error information
+  private static final String LOG_MSG_ERR_ITEM_PRE = CustomLoggerUtil.getProp("custom.log.msg.err.item.pre");
+  // Seperator between exception class and message in the error information
+  private static final String LOG_MSG_ERR_ITEM_SEP = CustomLoggerUtil.getProp("custom.log.msg.err.item.sep");
+
+
+  /*---------------------------------------------------------*/
+  /* STACKTRACE CONSTANTS                                    */
+  /*---------------------------------------------------------*/
+  // Should the stacktrace section be logged
+  private static final boolean LOG_MSG_STACK_SHOW = Boolean.parseBoolean(CustomLoggerUtil.getProp("custom.log.msg.stack.show"));
+  // Sequence before stacktrace headline
+  private static final String LOG_MSG_STACK_HEAD_PRE = CustomLoggerUtil.getProp("custom.log.msg.stack.head.pre");
+  // Headline of the stacktrace sequence
+  private static final String LOG_MSG_STACK_HEAD_TEXT = CustomLoggerUtil.getProp("custom.log.msg.stack.head.text");
+  // Sequence before every stacktrace entity
+  private static final String LOG_MSG_STACK_ITEM_PRE = CustomLoggerUtil.getProp("custom.log.msg.stack.item.pre");
+  // Minimum number of lines to log from the Stacktrace if -1 the whole stacktrace will be logged
+  private static final int LOG_MSG_STACK_ITEMS_LINES = Integer.parseInt(
+          Optional.ofNullable(CustomLoggerUtil.getProp("custom.log.msg.stack.items.lines.min")).orElse("5"));
+  // Maximum number of lines to log from the Stacktrace
+  private static final int LOG_MSG_STACK_ITEMS_LINES_MAX = Integer.parseInt(
+          Optional.ofNullable(CustomLoggerUtil.getProp("custom.log.msg.stack.items.lines.max")).orElse("10"));
+  // Border, when the LogLevel is higher than this given level the linex.max will be used instead of the normal lines.min
+  private static final int LOG_MSG_STACK_LINES_BORDER = Integer.parseInt(
+          Optional.ofNullable(CustomLoggerUtil.getProp("custom.log.msg.stack.items.lines.border")).orElse("4"));
+
+
+  /*------------------------------------------------------------------------------------------------------------------*/
+  /* CONSTRUCTOR                                                                                                      */
+  /*------------------------------------------------------------------------------------------------------------------*/
 
   /**
    * Private constructor
    */
-  private CustomLogger() {
-  }
+  private CustomLogger() {}
+
+
+  /*------------------------------------------------------------------------------------------------------------------*/
+  /* GENERAL METHODS                                                                                                  */
+  /*------------------------------------------------------------------------------------------------------------------*/
 
   /**
    * Gets the logger of the project.
@@ -79,10 +135,118 @@ public final class CustomLogger {
    * @return Boolean if the level should be logged (true) or not (false).
    */
   private static boolean checkLogLevel(CustomLogLevel level) {
-    if (LOG_LEVEL_PROP < 0)
+    if (LOG_LEVEL < 0)
       return false;
-    return level.level() >= LOG_LEVEL_PROP;
+    return level.level() >= LOG_LEVEL;
   }
+
+
+  /*------------------------------------------------------------------------------------------------------------------*/
+  /* GENERATOR METHODS                                                                                                */
+  /*------------------------------------------------------------------------------------------------------------------*/
+
+  /*---------------------------------------------------------*/
+  /* TIME                                                    */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Generates the time sequence.
+   *
+   * @return Finish generated time sequence String.
+   */
+  private static String generateTimeSequence() {
+    return LocalDateTime.now().format(DateTimeFormatter.ofPattern(LOG_MSG_TIME_PATTERN)) + LOG_MSG_TIME_SEP;
+  }
+
+  /*---------------------------------------------------------*/
+  /* MAIN                                                    */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Generates the main head sequence.
+   *
+   * @param level Loglevel.
+   * @param msg   Message.
+   * @return Finish generated main head sequence String.
+   */
+  private static String generateMainSequence(CustomLogLevel level, String msg) {
+    return LOG_MSG_MAIN_BEGIN + LOG_MSG_MAIN_SEP + level.text() + LOG_MSG_MAIN_SEP + msg + LOG_MSG_MAIN_SEP + LOG_MSG_MAIN_END;
+  }
+
+  /*---------------------------------------------------------*/
+  /* ADDITIONAL                                              */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Generates the additional sequence.
+   *
+   * @param add Additional information map.
+   * @return Finish generated additional sequence String.
+   */
+  private static String generateAddSequence(Map<String, ?> add) {
+    StringBuilder sb = new StringBuilder();
+    if (add != null) {
+      sb.append(NEW_LINE_CHAR).append(LOG_MSG_ADD_HEAD_PRE).append(LOG_MSG_ADD_HEAD_TEXT);
+      add.forEach((i, j) -> sb.append(NEW_LINE_CHAR).append(LOG_MSG_ADD_ITEM_PRE).append(i).append(LOG_MSG_ADD_ITEM_SEP).append(j));
+    }
+    return sb.toString();
+  }
+
+  /*---------------------------------------------------------*/
+  /* ERROR                                                   */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Generates the error sequence.
+   *
+   * @param e Exception.
+   * @return Finish generated error sequence String.
+   */
+  private static String generateErrorSequence(Exception e) {
+    String result = "";
+    if (e != null) {
+      result = NEW_LINE_CHAR + LOG_MSG_ERR_HEAD_PRE + LOG_MSG_ERR_HEAD_TEXT +
+              NEW_LINE_CHAR + LOG_MSG_ERR_ITEM_PRE + e.getClass().getName() + LOG_MSG_ERR_ITEM_SEP +
+              e.getLocalizedMessage();
+    }
+    return result;
+  }
+
+  /*---------------------------------------------------------*/
+  /* STACKTRACE                                              */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Generates the stacktrace sequence.
+   *
+   * @param level LogLevel.
+   * @param e     Exception.
+   * @return Finish generated tacktrace sequece String.
+   */
+  private static String generateStackTraceSequence(CustomLogLevel level, Exception e) {
+    StringBuilder sb = new StringBuilder();
+    if (e != null) {
+      sb.append(NEW_LINE_CHAR).append(LOG_MSG_STACK_HEAD_PRE).append(LOG_MSG_STACK_HEAD_TEXT);
+      StackTraceElement[] elements = e.getStackTrace();
+      int lines = LOG_MSG_STACK_ITEMS_LINES;
+      if (level.level() >= LOG_MSG_STACK_LINES_BORDER) {
+        lines = LOG_MSG_STACK_ITEMS_LINES_MAX;
+      }
+
+      if (lines >= elements.length || LOG_MSG_STACK_ITEMS_LINES == -1) {
+        lines = elements.length;
+      }
+
+      for (int i = 0; i < lines; i++) {
+        sb.append(NEW_LINE_CHAR).append(LOG_MSG_STACK_ITEM_PRE).append(elements[i]);
+      }
+    }
+    return sb.toString();
+  }
+
+  /*---------------------------------------------------------*/
+  /* Main Generator                                          */
+  /*---------------------------------------------------------*/
 
   /**
    * Generates the actual logmessage with the given information and settings done in the properties file.
@@ -90,31 +254,46 @@ public final class CustomLogger {
    * @param level Actual level.
    * @param msg   Actual message.
    * @param e     Actual exception (can be null).
+   * @param add   Additional information map.
    * @return Finish generated String.
    */
-  private static String generateLogMessage(CustomLogLevel level, String msg, Exception e) {
+  private static String generateLogMessage(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
     StringBuilder result = new StringBuilder();
-    if (CUSTOM_LOG_TIME) {
-      result.append(LocalDateTime.now().format(DateTimeFormatter.ofPattern(CUSTOM_MSG_TIMEPATTERN)))
-              .append(CUSTOM_MSG_TIMESEPERATOR);
+    if (LOG_MSG_TIME_SHOW) {
+      result.append(generateTimeSequence());
     }
-    result.append(CUSTOM_MSG_BEGIN).append(CUSTOM_MSG_SEPERATOR)
-            .append(level.text()).append(CUSTOM_MSG_SEPERATOR)
-            .append(msg).append(CUSTOM_MSG_SEPERATOR).append(CUSTOM_MSG_END);
-    if (e != null && CUSTOM_LOG_EXEPTION) {
-      result.append(CUSTOM_MSG_ERROR).append(CUSTOM_MSG_PRE_ERRORTXT).append(e.getLocalizedMessage());
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw, true);
-      e.printStackTrace(pw);
-      result.append(CUSTOM_MSG_STACK).append(CUSTOM_MSG_PRE_STACKTXT).append(sw.getBuffer());
-      try {
-        sw.close();
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
-      pw.close();
+    result.append(generateMainSequence(level, msg));
+    if (LOG_MSG_ADD_SHOW) {
+      result.append(generateAddSequence(add));
+    }
+    if (LOG_MSG_ERR_SHOW) {
+      result.append(generateErrorSequence(e));
+    }
+    if (LOG_MSG_STACK_SHOW) {
+      result.append(generateStackTraceSequence(level, e));
     }
     return result.toString();
+  }
+
+  /*------------------------------------------------------------------------------------------------------------------*/
+  /* DIFFERENT LOG METHODS                                                                                            */
+  /*------------------------------------------------------------------------------------------------------------------*/
+
+  /*---------------------------------------------------------*/
+  /* LOG: WARNING                                            */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Writes a warning log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param e     Exception.
+   * @param add   Additional information map.
+   */
+  public static void warning(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
+    if (checkLogLevel(level))
+      getLogger().warning(generateLogMessage(level, msg, e, add));
   }
 
   /**
@@ -125,8 +304,18 @@ public final class CustomLogger {
    * @param e     Exception.
    */
   public static void warning(CustomLogLevel level, String msg, Exception e) {
-    if (checkLogLevel(level))
-      getLogger().warning(generateLogMessage(level, msg, e));
+    warning(level, msg, e, null);
+  }
+
+  /**
+   * Writes a warning log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param add   Additional information map.
+   */
+  public static void warning(CustomLogLevel level, String msg, Map<String, ?> add) {
+    warning(level, msg, null, add);
   }
 
   /**
@@ -136,7 +325,7 @@ public final class CustomLogger {
    * @param msg   Custom message.
    */
   public static void warning(CustomLogLevel level, String msg) {
-    warning(level, msg, null);
+    warning(level, msg, null, null);
   }
 
   /**
@@ -148,6 +337,23 @@ public final class CustomLogger {
     warning(CustomLogLevel.UNDEFINED, msg);
   }
 
+  /*---------------------------------------------------------*/
+  /* LOG: INFO                                               */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Writes an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param e     Exception.
+   * @param add   Additional information map.
+   */
+  public static void info(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
+    if (checkLogLevel(level))
+      getLogger().info(generateLogMessage(level, msg, e, add));
+  }
+
   /**
    * Writes an info log entry.
    *
@@ -156,8 +362,18 @@ public final class CustomLogger {
    * @param e     Exception.
    */
   public static void info(CustomLogLevel level, String msg, Exception e) {
-    if (checkLogLevel(level))
-      getLogger().info(generateLogMessage(level, msg, e));
+    info(level, msg, e, null);
+  }
+
+  /**
+   * Writes an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param add   Additional information map.
+   */
+  public static void info(CustomLogLevel level, String msg, Map<String, ?> add) {
+    info(level, msg, null, add);
   }
 
   /**
@@ -167,7 +383,7 @@ public final class CustomLogger {
    * @param msg   Custom message.
    */
   public static void info(CustomLogLevel level, String msg) {
-    info(level, msg, null);
+    info(level, msg, null, null);
   }
 
   /**
@@ -179,6 +395,23 @@ public final class CustomLogger {
     info(CustomLogLevel.UNDEFINED, msg);
   }
 
+  /*---------------------------------------------------------*/
+  /* LOG: CONFIG                                             */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Writes a config log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param e     Exception.
+   * @param add   Additional information map.
+   */
+  public static void config(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
+    if (checkLogLevel(level))
+      getLogger().config(generateLogMessage(level, msg, e, add));
+  }
+
   /**
    * Writes a config log entry.
    *
@@ -187,8 +420,18 @@ public final class CustomLogger {
    * @param e     Exception.
    */
   public static void config(CustomLogLevel level, String msg, Exception e) {
-    if (checkLogLevel(level))
-      getLogger().config(generateLogMessage(level, msg, e));
+    config(level, msg, e, null);
+  }
+
+  /**
+   * Writes a config log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param add   Additional information map.
+   */
+  public static void config(CustomLogLevel level, String msg, Map<String, ?> add) {
+    config(level, msg, null, add);
   }
 
   /**
@@ -198,7 +441,7 @@ public final class CustomLogger {
    * @param msg   Custom message.
    */
   public static void config(CustomLogLevel level, String msg) {
-    config(level, msg, null);
+    config(level, msg, null, null);
   }
 
   /**
@@ -210,6 +453,27 @@ public final class CustomLogger {
     config(CustomLogLevel.UNDEFINED, msg);
   }
 
+  /*---------------------------------------------------------*/
+  /* LOG: FINE                                               */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Writes a fine log entry. If fine isnt supported it gets delegated to an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param e     Exception.
+   * @param add   Additional information map.
+   */
+  public static void fine(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
+    if (getLogger().isLoggable(Level.FINE)) {
+      if (checkLogLevel(level))
+        getLogger().fine(generateLogMessage(level, msg, e, add));
+    } else {
+      info(level, msg, e, add);
+    }
+  }
+
   /**
    * Writes a fine log entry. If fine isnt supported it gets delegated to an info log entry.
    *
@@ -218,12 +482,18 @@ public final class CustomLogger {
    * @param e     Exception.
    */
   public static void fine(CustomLogLevel level, String msg, Exception e) {
-    if (getLogger().isLoggable(Level.FINE)) {
-      if (checkLogLevel(level))
-        getLogger().fine(generateLogMessage(level, msg, e));
-    } else {
-      info(level, msg, e);
-    }
+    fine(level, msg, e, null);
+  }
+
+  /**
+   * Writes a fine log entry. If fine isnt supported it gets delegated to an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param add   Additional information map.
+   */
+  public static void fine(CustomLogLevel level, String msg, Map<String, ?> add) {
+    fine(level, msg, null, add);
   }
 
   /**
@@ -233,7 +503,7 @@ public final class CustomLogger {
    * @param msg   Custom message.
    */
   public static void fine(CustomLogLevel level, String msg) {
-    fine(level, msg, null);
+    fine(level, msg, null, null);
   }
 
   /**
@@ -245,6 +515,27 @@ public final class CustomLogger {
     fine(CustomLogLevel.UNDEFINED, msg);
   }
 
+  /*---------------------------------------------------------*/
+  /* LOG: FINER                                              */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Writes a finer log entry. If finer isnt supported it gets delegated to an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param e     Exception.
+   * @param add   Additional information map.
+   */
+  public static void finer(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
+    if (getLogger().isLoggable(Level.FINER)) {
+      if (checkLogLevel(level))
+        getLogger().finer(generateLogMessage(level, msg, e, add));
+    } else {
+      info(level, msg, e, add);
+    }
+  }
+
   /**
    * Writes a finer log entry. If finer isnt supported it gets delegated to an info log entry.
    *
@@ -253,12 +544,18 @@ public final class CustomLogger {
    * @param e     Exception.
    */
   public static void finer(CustomLogLevel level, String msg, Exception e) {
-    if (getLogger().isLoggable(Level.FINER)) {
-      if (checkLogLevel(level))
-        getLogger().finer(generateLogMessage(level, msg, e));
-    } else {
-      info(level, msg, e);
-    }
+    finer(level, msg, e, null);
+  }
+
+  /**
+   * Writes a finer log entry. If finer isnt supported it gets delegated to an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param add   Additional information map.
+   */
+  public static void finer(CustomLogLevel level, String msg, Map<String, ?> add) {
+    finer(level, msg, null, add);
   }
 
   /**
@@ -268,7 +565,7 @@ public final class CustomLogger {
    * @param msg   Custom message.
    */
   public static void finer(CustomLogLevel level, String msg) {
-    finer(level, msg, null);
+    finer(level, msg, null, null);
   }
 
   /**
@@ -280,6 +577,27 @@ public final class CustomLogger {
     finer(CustomLogLevel.UNDEFINED, msg);
   }
 
+  /*---------------------------------------------------------*/
+  /* LOG: FINEST                                             */
+  /*---------------------------------------------------------*/
+
+  /**
+   * Writes a finest log entry. If finest isnt supported it gets delegated to an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param e     Exception.
+   * @param add   Additional information map.
+   */
+  public static void finest(CustomLogLevel level, String msg, Exception e, Map<String, ?> add) {
+    if (getLogger().isLoggable(Level.FINEST)) {
+      if (checkLogLevel(level))
+        getLogger().finest(generateLogMessage(level, msg, e, add));
+    } else {
+      info(level, msg, e, add);
+    }
+  }
+
   /**
    * Writes a finest log entry. If finest isnt supported it gets delegated to an info log entry.
    *
@@ -288,12 +606,18 @@ public final class CustomLogger {
    * @param e     Exception.
    */
   public static void finest(CustomLogLevel level, String msg, Exception e) {
-    if (getLogger().isLoggable(Level.FINEST)) {
-      if (checkLogLevel(level))
-        getLogger().finest(generateLogMessage(level, msg, e));
-    } else {
-      info(level, msg, e);
-    }
+    finest(level, msg, e, null);
+  }
+
+  /**
+   * Writes a finest log entry. If finest isnt supported it gets delegated to an info log entry.
+   *
+   * @param level Loglevel.
+   * @param msg   Custom message.
+   * @param add   Additional information map.
+   */
+  public static void finest(CustomLogLevel level, String msg, Map<String, ?> add) {
+    finest(level, msg, null, add);
   }
 
   /**
@@ -303,7 +627,7 @@ public final class CustomLogger {
    * @param msg   Custom message.
    */
   public static void finest(CustomLogLevel level, String msg) {
-    finest(level, msg, null);
+    finest(level, msg, null, null);
   }
 
   /**
